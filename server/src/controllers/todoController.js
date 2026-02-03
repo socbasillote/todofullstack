@@ -107,3 +107,23 @@ export const deleteTodo = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const toggleTodoComplete = async (req, res) => {
+  try {
+    const todo = await Todo.findOne({
+      _id: req.params.id,
+      user: req.user.id,
+    });
+
+    if (!todo) {
+      return res.status(404).json({ message: "Todo not found" });
+    }
+
+    todo.completed = !todo.completed;
+    await todo.save();
+
+    res.json(todo);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

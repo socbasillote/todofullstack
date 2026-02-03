@@ -5,6 +5,7 @@ import {
   getTodo,
   getTodos,
   getUserTodos,
+  toggleTodoComplete,
   updateTodo,
 } from "../controllers/todoController.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
@@ -17,5 +18,6 @@ router.get("/", getTodos);
 router.get("/:id", getTodo);
 router.put("/:id", updateTodo);
 router.delete("/:id", deleteTodo);
+router.patch("/:id/toggle", authMiddleware, toggleTodoComplete);
 
 export default router;

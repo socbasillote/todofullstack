@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 const BASE_URL = "http://localhost:5000/api/todo";
 
+// Creat todo lsit
 export const createTodo = createAsyncThunk(
   "todo/create",
   async (form, { rejectWithValue }) => {
@@ -43,6 +44,26 @@ export const getUserTodo = createAsyncThunk(
     const data = await response.json();
     console.log(data);
     return data;
+  },
+);
+
+// toggle todo check
+export const toggleTodo = createAsyncThunk(
+  "todo/toggle",
+  async (id, { rejectWithValue }) => {
+    const res = await fetch(`${BASE_URL}/${id}/toggle`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      return rejectWithValue(err.message);
+    }
+
+    return await res.json();
   },
 );
 
@@ -100,7 +121,7 @@ export const deleteTodo = createAsyncThunk("todo/delete", async (id) => {
 
 const initialState = {
   todos: [],
-  filter: "all",
+  filter: "ongoing",
 };
 
 const todoSlice = createSlice({
@@ -135,6 +156,12 @@ const todoSlice = createSlice({
       })
       .addCase(deleteTodo.fulfilled, (state, action) => {
         state.todos = state.todos.filter((t) => t._id !== action.payload);
+      })
+
+      .addCase(toggleTodo.fulfilled, (state, action) => {
+        state.todos = state.todos.map((t) =>
+          t._id === action.payload._id ? action.payload : t,
+        );
       });
   },
 });

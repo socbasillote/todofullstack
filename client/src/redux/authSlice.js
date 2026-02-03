@@ -4,7 +4,7 @@ const BASE_URL = "http://localhost:5000/api/auth";
 
 export const register = createAsyncThunk(
   "auth/register",
-  async (form, { rejectWithValue }) => {
+  async ({ form, navigate }, { rejectWithValue }) => {
     const response = await fetch(`${BASE_URL}/register`, {
       method: "POST",
       headers: {
@@ -18,6 +18,7 @@ export const register = createAsyncThunk(
     }
     const data = await response.json();
     console.log("REGISTER RESPONSE 👉", data);
+    navigate("/");
     return data;
   },
 );

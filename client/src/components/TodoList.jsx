@@ -4,6 +4,7 @@ import {
   deleteTodo,
   getTodos,
   setFilter,
+  toggleTodo,
   updateTodo,
 } from "../redux/todoSlice";
 import { getTimeRemaining } from "../utils/getTimeRemaining";
@@ -43,53 +44,38 @@ function TodoList() {
   const SOON_THRESHOLD_MINUTES = 10;
 
   const filteredTodos = todos.filter((t) => {
-    if (!t.expiresAt) {
-      return filter === "all";
+    const time = t.expiresAt ? getTimeRemaining(t.expiresAt) : null;
+
+    switch (filter) {
+      case "ongoing":
+        return !t.completed && !time?.expired;
+
+      case "finished":
+        return t.completed;
+
+      case "active":
+        return t.expiresAt && !time?.expired && !t.completed;
+
+      case "expired":
+        return t.expiresAt && time?.expired;
+
+      default:
+        return true;
     }
-
-    const time = getTimeRemaining(t.expiresAt);
-
-    if (filter === "expired") return time.expired;
-
-    if (filter === "soon") {
-      if (time.expired) return false;
-
-      const totalMinutes = time.days * 1440 + time.hours * 60 + time.minutes;
-
-      return totalMinutes <= SOON_THRESHOLD_MINUTES;
-    }
-
-    return true;
   });
 
   return (
     <div>
       {/* FILTER BUTTONS */}
       <div className="flex gap-2 mb-4">
-        <button
-          onClick={() => dispatch(setFilter("all"))}
-          className={`px-3 py-1 rounded ${
-            filter === "all" ? "bg-emerald-600 text-white" : "bg-emerald-200"
-          }`}
-        >
-          All
+        <button onClick={() => dispatch(setFilter("ongoing"))}>
+          🟢 Ongoing
         </button>
-
-        <button
-          onClick={() => dispatch(setFilter("soon"))}
-          className={`px-3 py-1 rounded ${
-            filter === "soon" ? "bg-yellow-500 text-white" : "bg-yellow-200"
-          }`}
-        >
-          ⏳ Expires Soon
+        <button onClick={() => dispatch(setFilter("finished"))}>
+          ✅ Finished
         </button>
-
-        <button
-          onClick={() => dispatch(setFilter("expired"))}
-          className={`px-3 py-1 rounded ${
-            filter === "expired" ? "bg-red-500 text-white" : "bg-red-200"
-          }`}
-        >
+        <button onClick={() => dispatch(setFilter("active"))}>⏳ Active</button>
+        <button onClick={() => dispatch(setFilter("expired"))}>
           ⛔ Expired
         </button>
       </div>
@@ -129,6 +115,14 @@ function TodoList() {
                   </div>
                 ) : (
                   <>
+                    <button
+                      onClick={() => dispatch(toggleTodo(t._id))}
+                      className={`w-6 h-6 rounded border flex items-center justify-center 
+                          ${t.completed ? "bg-green-500 text-white" : "bg-white"}
+                        `}
+                    >
+                      {t.completed && "✓"}
+                    </button>
                     <h3 className="text-lg font-semibold">{t.title}</h3>
                     <p className="text-gray-600">{t.description}</p>
 

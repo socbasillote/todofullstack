@@ -2,6 +2,7 @@ import React from "react";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { register } from "../../redux/authSlice";
+import { useNavigate } from "react-router-dom";
 
 function Register() {
   const [form, setForm] = useState({
@@ -9,12 +10,13 @@ function Register() {
     email: "",
     password: "",
   });
+  const navigate = useNavigate();
 
   const dispatch = useDispatch();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    dispatch(register(form));
+    dispatch(register({ form, navigate }));
     setForm({
       name: "",
       email: "",

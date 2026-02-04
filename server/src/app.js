@@ -4,6 +4,7 @@ import cors from "cors";
 
 import authRouter from "./routers/authRouter.js";
 import todoRouter from "./routers/todoRouter.js";
+import folderRouter from "./routers/folderRouter.js";
 
 dotenv.config();
 const app = express();
@@ -15,5 +16,6 @@ app.use(express.json());
 // Router
 app.use("/api/auth", authRouter);
 app.use("/api/todo", todoRouter);
+app.use("/api/folders", folderRouter);
 
 export default app;

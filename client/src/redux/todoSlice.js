@@ -121,6 +121,8 @@ export const deleteTodo = createAsyncThunk("todo/delete", async (id) => {
 
 const initialState = {
   todos: [],
+  folders: [],
+  acitveFolder: null,
   filter: "ongoing",
 };
 

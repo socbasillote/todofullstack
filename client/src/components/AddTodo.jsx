@@ -1,12 +1,14 @@
 import React, { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { createTodo } from "../redux/todoSlice";
 
 function AddTodo() {
+  const { folders } = useSelector((state) => state.todo);
   const [form, setForm] = useState({
     title: "",
     description: "",
     hasExpiration: false,
+    folder: "",
     expiresIn: 60, // default: 60 minutes
   });
 
@@ -73,6 +75,18 @@ function AddTodo() {
           <label className="text-gray-700">Set expiration</label>
         </div>
 
+        <select
+          value={form.folder}
+          onChange={(e) => setForm({ ...form, folder: e.target.value })}
+        >
+          <option value="">Select Folder</option>
+          {folders.map((f) => (
+            <option key={f._id} value={f._id}>
+              {f.name}
+            </option>
+          ))}
+        </select>
+
         {form.hasExpiration && (
           <div className="mb-4">
             <label className="block text-gray-700">Expire in (minutes)</label>
@@ -87,6 +101,7 @@ function AddTodo() {
             />
           </div>
         )}
+
         <button
           type="submit"
           className="w-full py-3 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"

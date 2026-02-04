@@ -1,11 +1,8 @@
 import React from "react";
 import { LogOut, ListTodo, Folder } from "lucide-react";
-import { useDispatch, useSelector } from "react-redux";
+import FolderSidebar from "./FolderSidebar";
 
 function Sidebar() {
-  const dispatch = useDispatch();
-  const folders = useSelector((state) => state.todo.folders);
-
   return (
     <aside className="flex h-screen w-64 flex-col bg-slate-900 text-slate-100">
       {/* Top / Logo */}
@@ -26,21 +23,8 @@ function Sidebar() {
           <Folder size={18} />
           Folder
         </button>
-        <div className="w-64 border-r p-4">
-          <h3 className="font-semibold mb-2">Folders</h3>
 
-          {folders.map((f) => (
-            <button
-              key={f._id}
-              onClick={() => dispatch(setActiveFolder(f._id))}
-              className="block w-full text-left px-2 py-1 hover:bg-gray-200 rounded"
-            >
-              📁 {f.name}
-            </button>
-          ))}
-
-          <button className="mt-2 text-blue-500">+ Add Folder</button>
-        </div>
+        <FolderSidebar />
       </nav>
 
       {/* Bottom / Logout */}

@@ -21,6 +21,10 @@ const todoSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    folderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Folder",
+    },
     tag: {
       type: String,
     },

@@ -3,6 +3,7 @@ import { createFolder, deleteFolder, fetchFolders } from "./folderThunks";
 
 const initialState = {
   folders: [],
+  activeFolder: null,
   loading: false,
   error: null,
 };
@@ -10,7 +11,14 @@ const initialState = {
 const folderSlice = createSlice({
   name: "folders",
   initialState,
-  reducers: {},
+  reducers: {
+    setActiveFolder: (state, action) => {
+      state.activeFolder = action.payload;
+    },
+    clearActiveFolder: (state) => {
+      state.activeFolder = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       // FETCH
@@ -40,4 +48,5 @@ const folderSlice = createSlice({
   },
 });
 
+export const { setActiveFolder, clearActiveFolder } = folderSlice.actions;
 export default folderSlice.reducer;

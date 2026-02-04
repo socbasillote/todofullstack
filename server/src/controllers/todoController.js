@@ -3,7 +3,7 @@ import Todo from "../models/Todo.js";
 
 export const createTodo = async (req, res) => {
   try {
-    const { title, description, tag, expiresIn } = req.body;
+    const { title, description, tag, expiresIn, folderId } = req.body;
 
     let expiresAt = null;
 
@@ -17,6 +17,7 @@ export const createTodo = async (req, res) => {
       description,
       tag,
       expiresAt,
+      folderId,
     });
 
     if (!todo) {

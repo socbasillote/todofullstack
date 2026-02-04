@@ -28,7 +28,10 @@ export const createFolder = createAsyncThunk(
     try {
       const res = await fetch(BASE_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
         body: JSON.stringify({ name: folderName }),
       });
 

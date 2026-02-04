@@ -16,6 +16,7 @@ export const createFolder = async (req, res) => {
 
     res.status(200).json(folder);
   } catch (error) {
+    console.error("Create folder error", error);
     res.status(500).json({ message: error.message });
   }
 };

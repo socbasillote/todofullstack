@@ -12,6 +12,7 @@ import { getTimeRemaining } from "../utils/getTimeRemaining";
 function TodoList() {
   const dispatch = useDispatch();
   const { todos, filter } = useSelector((state) => state.todo);
+  const { activeFolder } = useSelector((state) => state.folder);
 
   const [editingTodoId, setEditingTodoId] = useState(null);
   const [editForm, setEditForm] = useState({ title: "", description: "" });
@@ -44,6 +45,8 @@ function TodoList() {
   const SOON_THRESHOLD_MINUTES = 10;
 
   const filteredTodos = todos.filter((t) => {
+    // folder filter first
+    if (activeFolder && t.folder !== activeFolder) return false;
     const time = t.expiresAt ? getTimeRemaining(t.expiresAt) : null;
 
     switch (filter) {
@@ -115,16 +118,27 @@ function TodoList() {
                   </div>
                 ) : (
                   <>
-                    <button
-                      onClick={() => dispatch(toggleTodo(t._id))}
-                      className={`w-6 h-6 rounded border flex items-center justify-center 
-                          ${t.completed ? "bg-green-500 text-white" : "bg-white"}
-                        `}
-                    >
-                      {t.completed && "✓"}
-                    </button>
-                    <h3 className="text-lg font-semibold">{t.title}</h3>
-                    <p className="text-gray-600">{t.description}</p>
+                    <div className="flex items-start gap-3">
+                      <button
+                        onClick={() => dispatch(toggleTodo(t._id))}
+                        className={`w-5 h-5 mt-1 rounded border flex items-center justify-center
+      ${t.completed ? "bg-green-500 text-white" : "bg-white"}
+    `}
+                      >
+                        {t.completed && "✓"}
+                      </button>
+
+                      <div>
+                        <h3
+                          className={`text-lg font-semibold ${
+                            t.completed ? "line-through text-gray-400" : ""
+                          }`}
+                        >
+                          {t.title}
+                        </h3>
+                        <p className="text-gray-600">{t.description}</p>
+                      </div>
+                    </div>
 
                     {!t.expiresAt && (
                       <span className="text-gray-400">No expiration</span>

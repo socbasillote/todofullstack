@@ -119,6 +119,20 @@ export const deleteTodo = createAsyncThunk("todo/delete", async (id) => {
   return id;
 });
 
+// Assing folder for todo
+export const assignTodoToFolder = createAsyncThunk(
+  "todos/assignToFolder",
+  async ({ todoId, folderId }) => {
+    const res = await fetch(`/api/todos/${todoId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ folderId }),
+    });
+
+    return await res.json();
+  },
+);
+
 const initialState = {
   todos: [],
   folders: [],
@@ -164,6 +178,16 @@ const todoSlice = createSlice({
         state.todos = state.todos.map((t) =>
           t._id === action.payload._id ? action.payload : t,
         );
+      })
+
+      .addCase(assignTodoToFolder.fulfilled, (state, action) => {
+        const index = state.todos.findIndex(
+          (t) => t._id === action.payload._id,
+        );
+
+        if (index !== -1) {
+          state.todos[index] = action.payload;
+        }
       });
   },
 });

@@ -6,69 +6,89 @@ import {
   setFilter,
   toggleTodo,
   updateTodo,
-} from "../redux/todoSlice";
-import { getTimeRemaining } from "../utils/getTimeRemaining";
+} from "../../redux/todoSlice";
+import { getTimeRemaining } from "../../utils/getTimeRemaining";
+import { fetchFolders } from "../../redux/folder/folderThunks";
 
 function TodoList() {
   const dispatch = useDispatch();
   const { todos, filter } = useSelector((state) => state.todo);
-  const { activeFolder } = useSelector((state) => state.folder);
+  const { folders, activeFolder } = useSelector((state) => state.folder);
 
   const [editingTodoId, setEditingTodoId] = useState(null);
-  const [editForm, setEditForm] = useState({ title: "", description: "" });
-  const [, forceTick] = useState(0);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    description: "",
+    folder: "",
+    hasExpiration: false,
+    expiresIn: 60,
+  });
 
-  // countdown tick
+  const [, forceTick] = useState(0); // for countdown updates
+
+  // countdown tick every second
   useEffect(() => {
-    const interval = setInterval(() => {
-      forceTick((t) => t + 1);
-    }, 1000);
+    const interval = setInterval(() => forceTick((t) => t + 1), 1000);
     return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
+    dispatch(fetchFolders());
     dispatch(getTodos());
   }, [dispatch]);
 
   const handleEditClick = (todo) => {
     setEditingTodoId(todo._id);
-    setEditForm({ title: todo.title, description: todo.description });
+    setEditForm({
+      title: todo.title,
+      description: todo.description,
+      folder: todo.folder?._id || null,
+      hasExpiration: !!todo.expiresAt,
+      expiresIn: todo.expiresAt
+        ? Math.ceil((new Date(todo.expiresAt) - Date.now()) / 60000)
+        : 60,
+    });
   };
 
   const handleSaveClick = (id) => {
-    dispatch(updateTodo({ id, form: editForm }));
+    dispatch(
+      updateTodo({
+        id,
+        form: {
+          title: editForm.title,
+          description: editForm.description,
+          folder: editForm.folder || null,
+          expiresIn: editForm.hasExpiration ? editForm.expiresIn : null,
+        },
+      }),
+    );
     setEditingTodoId(null);
-    setEditForm({ title: "", description: "" });
   };
 
-  // 🔎 FILTER LOGIC
+  // Filter todos by folder + status
   const SOON_THRESHOLD_MINUTES = 10;
-
   const filteredTodos = todos.filter((t) => {
-    // folder filter first
-    if (activeFolder && t.folder !== activeFolder) return false;
+    // Folder filter
+    if (activeFolder && t.folder?._id !== activeFolder) return false;
+
     const time = t.expiresAt ? getTimeRemaining(t.expiresAt) : null;
 
     switch (filter) {
       case "ongoing":
         return !t.completed && !time?.expired;
-
       case "finished":
         return t.completed;
-
       case "active":
         return t.expiresAt && !time?.expired && !t.completed;
-
       case "expired":
         return t.expiresAt && time?.expired;
-
       default:
         return true;
     }
   });
 
   return (
-    <div>
+    <div className="flex flex-col">
       {/* FILTER BUTTONS */}
       <div className="flex gap-2 mb-4">
         <button onClick={() => dispatch(setFilter("ongoing"))}>
@@ -94,9 +114,19 @@ function TodoList() {
               key={t._id}
               className="flex justify-between items-start p-4 bg-white shadow rounded-lg"
             >
-              <div className="flex-1">
+              <div className="flex-1 flex items-start gap-2">
+                {/* Completed checkbox */}
+                <button
+                  onClick={() => dispatch(toggleTodo(t._id))}
+                  className={`w-6 h-6 rounded border flex items-center justify-center
+                    ${t.completed ? "bg-green-500 text-white" : "bg-white"}`}
+                >
+                  {t.completed && "✓"}
+                </button>
+
+                {/* Edit mode */}
                 {editingTodoId === t._id ? (
-                  <div className="space-y-2">
+                  <div className="flex-1 space-y-2">
                     <input
                       type="text"
                       value={editForm.title}
@@ -115,30 +145,32 @@ function TodoList() {
                       }
                       className="w-full border rounded px-2 py-1"
                     />
+                    <select
+                      value={editForm.folder}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, folder: e.target.value })
+                      }
+                      className="w-full border rounded px-2 py-1"
+                    >
+                      <option value="">Select Folder</option>
+                      {folders.map((f) => (
+                        <option key={f._id} value={f._id}>
+                          {f.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 ) : (
-                  <>
-                    <div className="flex items-start gap-3">
-                      <button
-                        onClick={() => dispatch(toggleTodo(t._id))}
-                        className={`w-5 h-5 mt-1 rounded border flex items-center justify-center
-      ${t.completed ? "bg-green-500 text-white" : "bg-white"}
-    `}
-                      >
-                        {t.completed && "✓"}
-                      </button>
-
-                      <div>
-                        <h3
-                          className={`text-lg font-semibold ${
-                            t.completed ? "line-through text-gray-400" : ""
-                          }`}
-                        >
-                          {t.title}
-                        </h3>
-                        <p className="text-gray-600">{t.description}</p>
-                      </div>
-                    </div>
+                  <div className="flex-1">
+                    <h3
+                      className={`text-lg font-semibold ${t.completed ? "line-through" : ""}`}
+                    >
+                      {t.title}
+                    </h3>
+                    <p className="text-gray-600">{t.description}</p>
+                    <p className="text-sm text-gray-500">
+                      Folder: {t.folder?.name || "None"}
+                    </p>
 
                     {!t.expiresAt && (
                       <span className="text-gray-400">No expiration</span>
@@ -147,18 +179,14 @@ function TodoList() {
                     {t.expiresAt && (
                       <span
                         className={`inline-block mt-2 px-2 py-1 text-xs rounded
-                          ${
-                            time.expired
-                              ? "bg-red-100 text-red-700"
-                              : "bg-yellow-100 text-yellow-700"
-                          }`}
+                          ${time.expired ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700"}`}
                       >
                         {time.expired
                           ? "⛔ Expired"
                           : `⏳ ${time.days}d ${time.hours}h ${time.minutes}m ${time.seconds}s`}
                       </span>
                     )}
-                  </>
+                  </div>
                 )}
               </div>
 
@@ -174,12 +202,7 @@ function TodoList() {
                   <button
                     disabled={isExpired}
                     onClick={() => handleEditClick(t)}
-                    className={`px-3 py-1 rounded
-                      ${
-                        isExpired
-                          ? "bg-gray-300 cursor-not-allowed"
-                          : "bg-blue-500 text-white"
-                      }`}
+                    className={`px-3 py-1 rounded ${isExpired ? "bg-gray-300" : "bg-blue-500 text-white"}`}
                   >
                     Edit
                   </button>

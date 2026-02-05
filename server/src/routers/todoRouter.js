@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  assignTodoToFolder,
   createTodo,
   deleteTodo,
   getTodo,
@@ -13,11 +14,12 @@ import authMiddleware from "../middlewares/authMiddleware.js";
 const router = express.Router();
 
 router.post("/", authMiddleware, createTodo);
-router.get("/", authMiddleware, getUserTodos);
-router.get("/", getTodos);
+
+router.get("/", authMiddleware, getTodos);
 router.get("/:id", getTodo);
 router.put("/:id", updateTodo);
 router.delete("/:id", deleteTodo);
 router.patch("/:id/toggle", authMiddleware, toggleTodoComplete);
+router.patch("/:id/assign-folder", authMiddleware, assignTodoToFolder);
 
 export default router;

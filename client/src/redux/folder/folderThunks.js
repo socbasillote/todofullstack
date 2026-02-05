@@ -10,7 +10,11 @@ export const fetchFolders = createAsyncThunk(
   "folders/fetchFolders",
   async (_, { rejectWithValue }) => {
     try {
-      const res = await fetch(BASE_URL);
+      const res = await fetch(BASE_URL, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
       if (!res.ok) throw new Error("Failed to fetch folders");
       return await res.json();
     } catch (err) {
@@ -52,6 +56,9 @@ export const deleteFolder = createAsyncThunk(
     try {
       const res = await fetch(`${BASE_URL}/${folderId}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
 
       if (!res.ok) throw new Error("Failed to delete folder");

@@ -1,7 +1,7 @@
-import AddTodo from "../components/AddTodo";
 import Sidebar from "../components/Sidebar";
+import AddTodo from "../components/Todo/AddTodo";
 
-import TodoList from "../components/TodoList";
+import TodoList from "../components/Todo/TodoList";
 
 function Dashboard() {
   return (

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
-import { createFolder } from "../redux/folder/folderThunks";
+import { createFolder } from "../../redux/folder/folderThunks";
 
 function CreateFolderModal({ onClose }) {
   const dispatch = useDispatch();

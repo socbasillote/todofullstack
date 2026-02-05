@@ -3,7 +3,7 @@ import Todo from "../models/Todo.js";
 
 export const createTodo = async (req, res) => {
   try {
-    const { title, description, tag, expiresIn, folderId } = req.body;
+    const { title, description, tag, expiresIn, folder } = req.body;
 
     let expiresAt = null;
 
@@ -17,7 +17,7 @@ export const createTodo = async (req, res) => {
       description,
       tag,
       expiresAt,
-      folderId,
+      folder: folder || null,
     });
 
     if (!todo) {
@@ -26,6 +26,7 @@ export const createTodo = async (req, res) => {
 
     console.log("todo created");
 
+    await todo.populate("folder", "_id name");
     res.status(200).json(todo);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -47,8 +48,9 @@ export const getUserTodos = async (req, res) => {
 // Get All Todo
 export const getTodos = async (req, res) => {
   try {
-    const todo = await Todo.find();
-
+    const todo = await Todo.find({ user: req.user.id })
+      .populate("folder", "_id name")
+      .sort({ createdAt: -1 });
     if (!todo) {
       res.status(400).json({ message: "No todos avaiable" });
     }
@@ -124,6 +126,25 @@ export const toggleTodoComplete = async (req, res) => {
     await todo.save();
 
     res.json(todo);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const assignTodoToFolder = async (req, res) => {
+  try {
+    const { folderId } = req.body;
+    const todo = await Todo.findOneAndUpdate(
+      { _id: req.params.id, user: req.user.id },
+      { folder: folderId || null },
+      { new: true },
+    ).populate("folder", "_id name");
+
+    if (!todo) {
+      return res.status(404).json({ message: "Todo not found" });
+    }
+
+    res.status(200).json(todo);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

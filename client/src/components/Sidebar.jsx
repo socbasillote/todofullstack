@@ -1,6 +1,6 @@
 import React from "react";
 import { LogOut, ListTodo, Folder } from "lucide-react";
-import FolderSidebar from "./FolderSidebar";
+import FolderSidebar from "./Folder/FolderSidebar";
 
 function Sidebar() {
   return (

@@ -119,24 +119,56 @@ export const deleteTodo = createAsyncThunk("todo/delete", async (id) => {
   return id;
 });
 
+export const getFolders = createAsyncThunk(
+  "folder/getFolders",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await fetch("http://localhost:5000/api/folders", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        return rejectWithValue(err.message);
+      }
+      return await res.json();
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  },
+);
+
 // Assing folder for todo
 export const assignTodoToFolder = createAsyncThunk(
-  "todos/assignToFolder",
-  async ({ todoId, folderId }) => {
-    const res = await fetch(`/api/todos/${todoId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ folderId }),
-    });
+  "todo/assignToFolder",
+  async ({ todoId, folderId }, { rejectWithValue }) => {
+    try {
+      const res = await fetch(`${BASE_URL}/${todoId}/assign-folder`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ folderId }),
+      });
 
-    return await res.json();
+      if (!res.ok) {
+        const err = await res.json();
+        return rejectWithValue(err.message);
+      }
+
+      return await res.json();
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
   },
 );
 
 const initialState = {
   todos: [],
   folders: [],
-  acitveFolder: null,
+  activeFolder: null,
   filter: "ongoing",
 };
 
@@ -146,6 +178,9 @@ const todoSlice = createSlice({
   reducers: {
     setFilter(state, action) {
       state.filter = action.payload;
+    },
+    setActiveFolder: (state, action) => {
+      state.activeFolder = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -188,10 +223,14 @@ const todoSlice = createSlice({
         if (index !== -1) {
           state.todos[index] = action.payload;
         }
+      })
+
+      .addCase(getFolders.fulfilled, (state, action) => {
+        state.folders = action.payload;
       });
   },
 });
 
-export const { setFilter } = todoSlice.actions;
+export const { setFilter, setActiveFolder } = todoSlice.actions;
 
 export default todoSlice.reducer;

@@ -23,9 +23,7 @@ export const createFolder = async (req, res) => {
 
 export const getFolders = async (req, res) => {
   try {
-    const folders = (await Folder.find({ user: req.user.id })).toSorted({
-      createdAt: -1,
-    });
+    const folders = await Folder.find({ user: req.user.id });
 
     res.status(200).json(folders);
   } catch (error) {
@@ -53,7 +51,7 @@ export const updateFolder = async (req, res) => {
   }
 };
 
-export const deletFolder = async (req, res) => {
+export const deleteFolder = async (req, res) => {
   try {
     const folder = await Folder.findOneAndDelete({
       _id: req.params.id,

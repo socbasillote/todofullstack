@@ -5,12 +5,14 @@ import TodoList from "../components/Todo/TodoList";
 
 function Dashboard() {
   return (
-    <div className="flex min-h-screen bg-slate-100">
-      {/* Sidebar */}
-      <Sidebar />
+    <div className="flex h-screen overflow-hidden bg-slate-100">
+      {/* Sidebar (static) */}
+      <div className="">
+        <Sidebar />
+      </div>
 
-      {/* Main Content */}
-      <main className="flex-1 p-8">
+      {/* Main Content (scrolls) */}
+      <main className="flex-1 overflow-y-auto p-8">
         <div className="mx-auto max-w-3xl">
           <h1 className="mb-6 text-3xl font-bold text-slate-800">Dashboard</h1>
 

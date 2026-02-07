@@ -2,7 +2,15 @@ import React from "react";
 import { LogOut, ListTodo, Folder } from "lucide-react";
 import FolderSidebar from "./Folder/FolderSidebar";
 
+import { useNavigate } from "react-router-dom";
+
 function Sidebar() {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    navigate("/login");
+    localStorage.removeItem("token");
+  };
   return (
     <aside className="flex h-screen w-64 flex-col bg-slate-900 text-slate-100">
       {/* Top / Logo */}
@@ -29,7 +37,10 @@ function Sidebar() {
 
       {/* Bottom / Logout */}
       <div className="border-t border-slate-800 p-4">
-        <button className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-red-400 transition hover:bg-red-500/10 hover:text-red-500">
+        <button
+          onClick={handleLogout}
+          className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-red-400 transition hover:bg-red-500/10 hover:text-red-500"
+        >
           <LogOut size={18} />
           Logout
         </button>

@@ -112,7 +112,7 @@ function TodoList() {
           return (
             <li
               key={t._id}
-              className="flex justify-between items-start p-4 bg-white shadow rounded-lg"
+              className="group flex justify-between items-start p-4 bg-white shadow rounded-lg"
             >
               <div className="flex-1 flex items-start gap-2">
                 {/* Completed checkbox */}
@@ -190,7 +190,12 @@ function TodoList() {
                 )}
               </div>
 
-              <div className="ml-4 flex gap-2">
+              <div
+                className={`
+                  ml-4 flex gap-2 transition-opacity duration-200
+                  ${editingTodoId === t._id ? "opacity-100" : "opacity-0 group-hover:opacity-100"}
+                `}
+              >
                 {editingTodoId === t._id ? (
                   <button
                     onClick={() => handleSaveClick(t._id)}

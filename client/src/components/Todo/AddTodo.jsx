@@ -12,6 +12,8 @@ function AddTodo() {
     hasExpiration: false,
     folder: "", // selected folder ID
     expiresIn: 60, // default: 60 minutes
+    expirationDate: "", // YYYY-MM-DD
+    expirationTime: "",
   });
 
   useEffect(() => {
@@ -20,15 +22,20 @@ function AddTodo() {
 
   const handleAddTodo = (e) => {
     e.preventDefault();
+    let expiresAt = null;
 
     if (!form.title.trim() || !form.description.trim()) return;
+
+    if (form.hasExpiration && form.expirationDate && form.expirationTime) {
+      expiresAt = new Date(`${form.expirationDate}T${form.expirationTime}`);
+    }
 
     // Build payload for backend
     const payload = {
       title: form.title,
       description: form.description,
       folder: form.folder || null, // assign folder or null
-      expiresIn: form.hasExpiration ? form.expiresIn : null, // minutes or null
+      expiresAt, // minutes or null
     };
 
     dispatch(createTodo(payload));
@@ -39,7 +46,8 @@ function AddTodo() {
       description: "",
       hasExpiration: false,
       folder: "",
-      expiresIn: 60,
+      expirationDate: "",
+      expirationTime: "",
     });
 
     console.log("Todo added successfully");
@@ -89,17 +97,37 @@ function AddTodo() {
         </div>
 
         {form.hasExpiration && (
-          <div className="mb-4">
-            <label className="block text-gray-700">Expire in (minutes)</label>
-            <input
-              type="number"
-              min="0"
-              value={form.expiresIn}
-              onChange={(e) =>
-                setForm({ ...form, expiresIn: Number(e.target.value) })
-              }
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+          <div className="mb-4 grid grid-cols-2 gap-4">
+            {/* Date Picker */}
+            <div>
+              <label className="block text-gray-700 mb-1">
+                Expiration Date
+              </label>
+              <input
+                type="date"
+                value={form.expirationDate}
+                onChange={(e) =>
+                  setForm({ ...form, expirationDate: e.target.value })
+                }
+                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            {/* Time Picker */}
+            <div>
+              <label className="block text-gray-700 mb-1">
+                Expiration Time
+              </label>
+              <input
+                type="time"
+                step="900" // 15-minute increments
+                value={form.expirationTime}
+                onChange={(e) =>
+                  setForm({ ...form, expirationTime: e.target.value })
+                }
+                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
           </div>
         )}
 

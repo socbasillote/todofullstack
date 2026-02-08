@@ -9,6 +9,8 @@ import {
 } from "../../redux/todoSlice";
 import { getTimeRemaining } from "../../utils/getTimeRemaining";
 import { fetchFolders } from "../../redux/folder/folderThunks";
+import { getTodosStatus } from "../../utils/todoStatus";
+import { TODO_STATUS } from "../../constants/todoStatusConfig";
 
 function TodoList() {
   const dispatch = useDispatch();
@@ -109,6 +111,9 @@ function TodoList() {
           const time = t.expiresAt ? getTimeRemaining(t.expiresAt) : null;
           const isExpired = t.expiresAt && time?.expired;
 
+          const status = getTodosStatus(t);
+          const ui = TODO_STATUS[status];
+
           return (
             <li
               key={t._id}
@@ -162,11 +167,18 @@ function TodoList() {
                   </div>
                 ) : (
                   <div className="flex-1">
+                    <span
+                      className={`w-3 h-3 rounded-full ${ui.dot}`}
+                      title={ui.label}
+                    />
                     <h3
                       className={`text-lg font-semibold ${t.completed ? "line-through" : ""}`}
                     >
                       {t.title}
                     </h3>
+                    {ui.label && (
+                      <span className="text-xs text-gray-400">{ui.label}</span>
+                    )}
                     <p className="text-gray-600">{t.description}</p>
                     <p className="text-sm text-gray-500">
                       Folder: {t.folder?.name || "None"}

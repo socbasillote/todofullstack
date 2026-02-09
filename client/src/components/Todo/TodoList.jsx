@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+
 import {
   deleteTodo,
   getTodos,
@@ -7,11 +8,11 @@ import {
   toggleTodo,
   updateTodo,
 } from "../../redux/todoSlice";
-import { getTimeRemaining } from "../../utils/getTimeRemaining";
 import { fetchFolders } from "../../redux/folder/folderThunks";
-import { getTodosStatus } from "../../utils/todoStatus";
-import { TODO_STATUS } from "../../constants/todoStatusConfig";
-import { formatExpiration } from "../../utils/formatExpiration";
+
+import { useFilteredTodos } from "../../hooks/useFilteredTodos";
+import FinishedTodos from "./FinishedTodos";
+import TodoItem from "./TodoItem";
 
 function TodoList() {
   const dispatch = useDispatch();
@@ -27,33 +28,36 @@ function TodoList() {
     expiresIn: null,
   });
 
-  const [, forceTick] = useState(0); // for countdown updates
-
-  // countdown tick every second
-  useEffect(() => {
-    const interval = setInterval(() => forceTick((t) => t + 1), 1000);
-    return () => clearInterval(interval);
-  }, []);
+  const [, forceTick] = useState(0);
 
   useEffect(() => {
     dispatch(fetchFolders());
     dispatch(getTodos());
   }, [dispatch]);
 
-  const handleEditClick = (todo) => {
+  useEffect(() => {
+    const i = setInterval(() => forceTick((t) => t + 1), 1000);
+    return () => clearInterval(i);
+  }, []);
+
+  const filteredTodos = useFilteredTodos(todos, filter, activeFolder);
+  const finishedTodos =
+    filter === "finished" ? todos.filter((t) => t.completed) : [];
+
+  const handleEdit = (todo) => {
     setEditingTodoId(todo._id);
     setEditForm({
       title: todo.title,
       description: todo.description,
-      folder: todo.folder?._id || null,
-      hasExpiration: !!todo.expiresAt,
+      folder: todo.folder?._id || "",
+      hasExpiration: Boolean(todo.expiresAt),
       expiresIn: todo.expiresAt
         ? Math.ceil((new Date(todo.expiresAt) - Date.now()) / 60000)
         : 60,
     });
   };
 
-  const handleSaveClick = (id) => {
+  const handleSave = (id) => {
     dispatch(
       updateTodo({
         id,
@@ -68,31 +72,8 @@ function TodoList() {
     setEditingTodoId(null);
   };
 
-  // Filter todos by folder + status
-  const SOON_THRESHOLD_MINUTES = 10;
-  const filteredTodos = todos.filter((t) => {
-    // Folder filter
-    if (activeFolder && t.folder?._id !== activeFolder) return false;
-
-    const time = t.expiresAt ? getTimeRemaining(t.expiresAt) : null;
-
-    switch (filter) {
-      case "ongoing":
-        return !t.completed && !time?.expired;
-      case "finished":
-        return t.completed;
-      case "active":
-        return t.expiresAt && !time?.expired && !t.completed;
-      case "expired":
-        return t.expiresAt && time?.expired;
-      default:
-        return true;
-    }
-  });
-
   return (
     <div className="flex flex-col">
-      {/* FILTER BUTTONS */}
       <div className="flex gap-2 mb-4">
         <button onClick={() => dispatch(setFilter("ongoing"))}>
           🟢 Ongoing
@@ -106,153 +87,26 @@ function TodoList() {
         </button>
       </div>
 
-      {/* TODOS */}
-      <ul className="space-y-4">
-        {filteredTodos.map((t) => {
-          const time = t.expiresAt ? getTimeRemaining(t.expiresAt) : null;
-          const isExpired = t.expiresAt && time?.expired;
-
-          const status = getTodosStatus(t);
-          const ui = TODO_STATUS[status];
-
-          return (
-            <li
-              key={t._id}
-              className="group flex justify-between items-start p-4 bg-white shadow rounded-lg"
-            >
-              <div className="flex-1 flex items-start gap-2">
-                {/* Completed checkbox */}
-                <button
-                  onClick={() => dispatch(toggleTodo(t._id))}
-                  className={`w-6 h-6 rounded border flex items-center justify-center
-                    ${t.completed ? "bg-green-500 text-white" : "bg-white"}`}
-                >
-                  {t.completed && "✓"}
-                </button>
-
-                {/* Edit mode */}
-                {editingTodoId === t._id ? (
-                  <div className="flex-1 space-y-2">
-                    <input
-                      type="text"
-                      value={editForm.title}
-                      onChange={(e) =>
-                        setEditForm({ ...editForm, title: e.target.value })
-                      }
-                      className="w-full border rounded px-2 py-1"
-                    />
-                    <textarea
-                      value={editForm.description}
-                      onChange={(e) =>
-                        setEditForm({
-                          ...editForm,
-                          description: e.target.value,
-                        })
-                      }
-                      className="w-full border rounded px-2 py-1"
-                    />
-                    <select
-                      value={editForm.folder}
-                      onChange={(e) =>
-                        setEditForm({ ...editForm, folder: e.target.value })
-                      }
-                      className="w-full border rounded px-2 py-1"
-                    >
-                      <option value="">Select Folder</option>
-                      {folders.map((f) => (
-                        <option key={f._id} value={f._id}>
-                          {f.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                ) : (
-                  <div className="flex-1">
-                    <span
-                      className={`w-3 h-3 rounded-full ${ui.dot}`}
-                      title={ui.label}
-                    />
-                    <h3
-                      className={`text-lg font-semibold ${t.completed ? "line-through" : ""}`}
-                    >
-                      {t.title}
-                    </h3>
-                    {ui.label && (
-                      <span className="text-xs text-gray-400">{ui.label}</span>
-                    )}
-                    <p className="text-gray-600">{t.description}</p>
-                    <p className="text-sm text-gray-500">
-                      Folder: {t.folder?.name || "None"}
-                    </p>
-
-                    {!t.expiresAt && (
-                      <span className="text-gray-400">No expiration</span>
-                    )}
-
-                    {t.expiresAt &&
-                      (() => {
-                        const { time: clock, date } = formatExpiration(
-                          t.expiresAt,
-                        );
-
-                        return (
-                          <div className="mt-2 space-y-1 text-sm">
-                            <div className="text-gray-600">
-                              ⏰ Expires at <strong>{clock}</strong> · {date}
-                            </div>
-                            {/* 
-                            {!time.expired && (
-                              <div className="text-yellow-600 text-xs">
-                                ⏳ {time.hours}h {time.minutes}m remaining
-                              </div>
-                            )} */}
-
-                            {time.expired && (
-                              <div className="text-red-600 text-xs font-semibold">
-                                ⛔ Expired
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })()}
-                  </div>
-                )}
-              </div>
-
-              <div
-                className={`
-                  ml-4 flex gap-2 transition-opacity duration-200
-                  ${editingTodoId === t._id ? "opacity-100" : "opacity-0 group-hover:opacity-100"}
-                `}
-              >
-                {editingTodoId === t._id ? (
-                  <button
-                    onClick={() => handleSaveClick(t._id)}
-                    className="px-3 py-1 bg-green-500 text-white rounded"
-                  >
-                    Save
-                  </button>
-                ) : (
-                  <button
-                    disabled={isExpired}
-                    onClick={() => handleEditClick(t)}
-                    className={`px-3 py-1 rounded ${isExpired ? "bg-gray-300" : "bg-blue-500 text-white"}`}
-                  >
-                    Edit
-                  </button>
-                )}
-
-                <button
-                  onClick={() => dispatch(deleteTodo(t._id))}
-                  className="px-3 py-1 bg-red-500 text-white rounded"
-                >
-                  Delete
-                </button>
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+      {filter === "finished" ? (
+        <FinishedTodos todos={finishedTodos} />
+      ) : (
+        <ul className="space-y-4">
+          {filteredTodos.map((todo) => (
+            <TodoItem
+              key={todo._id}
+              todo={todo}
+              folders={folders}
+              editingTodoId={editingTodoId}
+              editForm={editForm}
+              setEditForm={setEditForm}
+              onToggle={(id) => dispatch(toggleTodo(id))}
+              onEdit={handleEdit}
+              onSave={handleSave}
+              onDelete={(id) => dispatch(deleteTodo(id))}
+            />
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { createTodo, getFolders } from "../../redux/todoSlice";
 
-function AddTodo() {
+function AddTodo({ onClose }) {
   const dispatch = useDispatch();
   const { folders } = useSelector((state) => state.folder); // ✅ fetch from folder slice
 
@@ -51,6 +51,7 @@ function AddTodo() {
     });
     console.log(expiresAt);
     console.log("Todo added successfully");
+    onClose?.();
   };
 
   return (

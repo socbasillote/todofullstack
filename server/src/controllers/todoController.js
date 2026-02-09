@@ -117,6 +117,7 @@ export const toggleTodoComplete = async (req, res) => {
     }
 
     todo.completed = !todo.completed;
+    todo.completedAt = todo.completed ? new Date() : null;
     await todo.save();
 
     res.json(todo);

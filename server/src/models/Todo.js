@@ -21,6 +21,10 @@ const todoSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    completedAt: {
+      type: Date,
+      default: null,
+    },
     folder: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Folder",

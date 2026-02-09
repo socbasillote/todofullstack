@@ -13,6 +13,7 @@ import { fetchFolders } from "../../redux/folder/folderThunks";
 import { useFilteredTodos } from "../../hooks/useFilteredTodos";
 import FinishedTodos from "./FinishedTodos";
 import TodoItem from "./TodoItem";
+import TodoStats from "./TodoStats";
 
 function TodoList() {
   const dispatch = useDispatch();
@@ -74,6 +75,7 @@ function TodoList() {
 
   return (
     <div className="flex flex-col">
+      <TodoStats todos={todos} />
       <div className="flex gap-2 mb-4">
         <button onClick={() => dispatch(setFilter("ongoing"))}>
           🟢 Ongoing

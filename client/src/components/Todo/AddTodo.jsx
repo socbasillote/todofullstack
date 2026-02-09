@@ -14,6 +14,7 @@ function AddTodo({ onClose }) {
     expiresAt: null, // default: 60 minutes
     expirationDate: "", // YYYY-MM-DD
     expirationTime: "",
+    priority: "",
   });
 
   useEffect(() => {
@@ -36,6 +37,7 @@ function AddTodo({ onClose }) {
       description: form.description,
       folder: form.folder || null, // assign folder or null
       expiresAt, // minutes or null
+      priority: form.priority,
     };
 
     dispatch(createTodo(payload));
@@ -48,6 +50,7 @@ function AddTodo({ onClose }) {
       folder: "",
       expirationDate: "",
       expirationTime: "",
+      priority: "medium",
     });
     console.log(expiresAt);
     console.log("Todo added successfully");
@@ -84,6 +87,16 @@ function AddTodo({ onClose }) {
             className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
+
+        <select
+          value={form.priority}
+          onChange={(e) => setForm({ ...form, priority: e.target.value })}
+        >
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+          <option value="critical">Critical</option>
+        </select>
 
         {/* Optional Expiration */}
         <div className="mb-4 flex items-center gap-2">

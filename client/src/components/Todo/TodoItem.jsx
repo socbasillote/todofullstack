@@ -21,9 +21,23 @@ function TodoItem({
   const ui = TODO_STATUS[status];
 
   const isEditing = editingTodoId === todo._id;
+  const PRIORITY_UI = {
+    low: "border-l-4 border-gray-300",
+    medium: "border-l-4 border-blue-400",
+    high: "border-l-4 border-orange-400",
+    critical: "border-l-4 border-red-500",
+  };
+  const PRIORITY_TEXT = {
+    low: "bg-gray-100  text-gray-700",
+    medium: "bg-blue-100  text-blue-700",
+    high: "bg-orange-100  text-orange-700",
+    critical: "bg-red-100  text-red-700",
+  };
 
   return (
-    <li className="group flex justify-between items-start p-4 bg-white shadow rounded-lg">
+    <li
+      className={`group flex justify-between items-start p-4 bg-white shadow rounded-lg ${PRIORITY_UI[todo.priority]}`}
+    >
       <div className="flex-1 flex items-start gap-2">
         <button
           onClick={() => onToggle(todo._id)}
@@ -67,6 +81,12 @@ function TodoItem({
         ) : (
           <div className="flex-1">
             <span className={`w-3 h-3 rounded-full ${ui.dot}`} />
+            <span
+              className={`text-xs px-2 py-0.5 rounded ${PRIORITY_TEXT[todo.priority]}`}
+            >
+              {todo.priority}
+            </span>
+
             <h3
               className={`text-lg font-semibold ${
                 todo.completed ? "line-through" : ""

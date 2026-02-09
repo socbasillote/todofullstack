@@ -11,6 +11,7 @@ import { getTimeRemaining } from "../../utils/getTimeRemaining";
 import { fetchFolders } from "../../redux/folder/folderThunks";
 import { getTodosStatus } from "../../utils/todoStatus";
 import { TODO_STATUS } from "../../constants/todoStatusConfig";
+import { formatExpiration } from "../../utils/formatExpiration";
 
 function TodoList() {
   const dispatch = useDispatch();
@@ -23,7 +24,7 @@ function TodoList() {
     description: "",
     folder: "",
     hasExpiration: false,
-    expiresIn: 60,
+    expiresIn: null,
   });
 
   const [, forceTick] = useState(0); // for countdown updates
@@ -188,16 +189,32 @@ function TodoList() {
                       <span className="text-gray-400">No expiration</span>
                     )}
 
-                    {t.expiresAt && (
-                      <span
-                        className={`inline-block mt-2 px-2 py-1 text-xs rounded
-                          ${time.expired ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700"}`}
-                      >
-                        {time.expired
-                          ? "⛔ Expired"
-                          : `⏳ ${time.days}d ${time.hours}h ${time.minutes}m ${time.seconds}s`}
-                      </span>
-                    )}
+                    {t.expiresAt &&
+                      (() => {
+                        const { time: clock, date } = formatExpiration(
+                          t.expiresAt,
+                        );
+
+                        return (
+                          <div className="mt-2 space-y-1 text-sm">
+                            <div className="text-gray-600">
+                              ⏰ Expires at <strong>{clock}</strong> · {date}
+                            </div>
+                            {/* 
+                            {!time.expired && (
+                              <div className="text-yellow-600 text-xs">
+                                ⏳ {time.hours}h {time.minutes}m remaining
+                              </div>
+                            )} */}
+
+                            {time.expired && (
+                              <div className="text-red-600 text-xs font-semibold">
+                                ⛔ Expired
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
                   </div>
                 )}
               </div>

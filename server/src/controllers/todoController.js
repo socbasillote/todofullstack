@@ -3,20 +3,14 @@ import Todo from "../models/Todo.js";
 
 export const createTodo = async (req, res) => {
   try {
-    const { title, description, tag, expiresIn, folder } = req.body;
-
-    let expiresAt = null;
-
-    if (expiresIn && expiresIn > 0) {
-      expiresAt = new Date(Date.now() + expiresIn * 60 * 1000);
-    }
+    const { title, description, tag, expiresAt, folder } = req.body;
 
     const todo = await Todo.create({
       user: req.user.id,
       title,
       description,
       tag,
-      expiresAt,
+      expiresAt: expiresAt ? new Date(expiresAt) : null,
       folder: folder || null,
     });
 

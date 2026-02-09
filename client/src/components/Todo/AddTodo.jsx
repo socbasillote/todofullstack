@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { createTodo, getFolders, getTodos } from "../../redux/todoSlice";
+import { createTodo, getFolders } from "../../redux/todoSlice";
 
 function AddTodo() {
   const dispatch = useDispatch();
@@ -11,7 +11,7 @@ function AddTodo() {
     description: "",
     hasExpiration: false,
     folder: "", // selected folder ID
-    expiresIn: 60, // default: 60 minutes
+    expiresAt: null, // default: 60 minutes
     expirationDate: "", // YYYY-MM-DD
     expirationTime: "",
   });
@@ -49,7 +49,7 @@ function AddTodo() {
       expirationDate: "",
       expirationTime: "",
     });
-
+    console.log(expiresAt);
     console.log("Todo added successfully");
   };
 

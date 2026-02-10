@@ -6,6 +6,7 @@ import {
   getTodo,
   getTodos,
   getUserTodos,
+  reorderTodos,
   toggleTodoComplete,
   updateTodo,
 } from "../controllers/todoController.js";
@@ -21,5 +22,6 @@ router.put("/:id", updateTodo);
 router.delete("/:id", deleteTodo);
 router.patch("/:id/toggle", authMiddleware, toggleTodoComplete);
 router.patch("/:id/assign-folder", authMiddleware, assignTodoToFolder);
+router.patch("/reorder", authMiddleware, reorderTodos);
 
 export default router;

@@ -145,3 +145,15 @@ export const assignTodoToFolder = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const reorderTodos = async (req, res) => {
+  const bulkOps = req.body.items.map((item) => ({
+    updateOne: {
+      filter: { _id: item._id, user: req.user.id },
+      update: { order: item.order },
+    },
+  }));
+
+  await Todo.bulkWrite(bulkOps);
+  res.json({ success: true });
+};

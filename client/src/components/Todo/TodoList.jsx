@@ -7,6 +7,8 @@ import {
   setFilter,
   toggleTodo,
   updateTodo,
+  updateTodoOrder,
+  saveTodoOrder,
 } from "../../redux/todoSlice";
 import { fetchFolders } from "../../redux/folder/folderThunks";
 
@@ -14,6 +16,13 @@ import { useFilteredTodos } from "../../hooks/useFilteredTodos";
 import FinishedTodos from "./FinishedTodos";
 import TodoItem from "./TodoItem";
 import TodoStats from "./TodoStats";
+
+import { DndContext, closestCenter } from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
 
 function TodoList() {
   const dispatch = useDispatch();
@@ -45,6 +54,10 @@ function TodoList() {
   const finishedTodos =
     filter === "finished" ? todos.filter((t) => t.completed) : [];
 
+  const orderedTodos = [...filteredTodos]
+    .filter((t) => (activeFolder ? t.folder?._id === activeFolder : !t.folder))
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
   const handleEdit = (todo) => {
     setEditingTodoId(todo._id);
     setEditForm({
@@ -73,6 +86,29 @@ function TodoList() {
     setEditingTodoId(null);
   };
 
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) return;
+    if (filter !== "ongoing" || activeFolder) return;
+
+    const oldIndex = orderedTodos.findIndex((t) => t._id === active.id);
+    const newIndex = orderedTodos.findIndex((t) => t._id === over.id);
+
+    const newOrder = arrayMove(orderedTodos, oldIndex, newIndex).map(
+      (t, index) => ({
+        ...t,
+        order: index,
+      }),
+    );
+
+    // Optimistic UI update
+    dispatch(updateTodoOrder(newOrder));
+
+    // Persist to backend
+    dispatch(saveTodoOrder(newOrder));
+  };
+
   return (
     <div className="flex flex-col">
       <TodoStats todos={todos} />
@@ -92,22 +128,32 @@ function TodoList() {
       {filter === "finished" ? (
         <FinishedTodos todos={finishedTodos} />
       ) : (
-        <ul className="space-y-4">
-          {filteredTodos.map((todo) => (
-            <TodoItem
-              key={todo._id}
-              todo={todo}
-              folders={folders}
-              editingTodoId={editingTodoId}
-              editForm={editForm}
-              setEditForm={setEditForm}
-              onToggle={(id) => dispatch(toggleTodo(id))}
-              onEdit={handleEdit}
-              onSave={handleSave}
-              onDelete={(id) => dispatch(deleteTodo(id))}
-            />
-          ))}
-        </ul>
+        <DndContext
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={orderedTodos.map((t) => t._id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <ul className="space-y-4">
+              {orderedTodos.map((todo) => (
+                <TodoItem
+                  key={todo._id}
+                  todo={todo}
+                  folders={folders}
+                  editingTodoId={editingTodoId}
+                  editForm={editForm}
+                  setEditForm={setEditForm}
+                  onToggle={(id) => dispatch(toggleTodo(id))}
+                  onEdit={handleEdit}
+                  onSave={handleSave}
+                  onDelete={(id) => dispatch(deleteTodo(id))}
+                />
+              ))}
+            </ul>
+          </SortableContext>
+        </DndContext>
       )}
     </div>
   );

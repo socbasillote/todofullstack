@@ -165,6 +165,38 @@ export const assignTodoToFolder = createAsyncThunk(
   },
 );
 
+export const saveTodoOrder = createAsyncThunk(
+  "todos/reorder",
+  async (todos, { getState, rejectWithValue }) => {
+    try {
+      const token = getState().auth.token;
+
+      const res = await fetch("http://localhost:5000/api/todo/reorder", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          items: todos.map((t) => ({
+            _id: t._id,
+            order: t.order,
+          })),
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        return rejectWithValue(err.message);
+      }
+
+      return await res.json();
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  },
+);
+
 const initialState = {
   todos: [],
   folders: [],
@@ -181,6 +213,9 @@ const todoSlice = createSlice({
     },
     setActiveFolder: (state, action) => {
       state.activeFolder = action.payload;
+    },
+    updateTodoOrder(state, action) {
+      state.todos = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -231,6 +266,7 @@ const todoSlice = createSlice({
   },
 });
 
-export const { setFilter, setActiveFolder } = todoSlice.actions;
+export const { setFilter, setActiveFolder, updateTodoOrder } =
+  todoSlice.actions;
 
 export default todoSlice.reducer;

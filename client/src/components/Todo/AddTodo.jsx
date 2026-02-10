@@ -14,7 +14,7 @@ function AddTodo({ onClose }) {
     expiresAt: null, // default: 60 minutes
     expirationDate: "", // YYYY-MM-DD
     expirationTime: "",
-    priority: "",
+    priority: "low",
   });
 
   useEffect(() => {
@@ -50,7 +50,7 @@ function AddTodo({ onClose }) {
       folder: "",
       expirationDate: "",
       expirationTime: "",
-      priority: "medium",
+      priority: "low",
     });
     console.log(expiresAt);
     console.log("Todo added successfully");

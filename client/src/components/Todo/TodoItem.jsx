@@ -3,6 +3,9 @@ import { getTodosStatus } from "../../utils/todoStatus";
 import { formatExpiration } from "../../utils/formatExpiration";
 import { TODO_STATUS } from "../../constants/todoStatusConfig";
 
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
 function TodoItem({
   todo,
   folders,
@@ -34,9 +37,21 @@ function TodoItem({
     critical: "bg-red-100  text-red-700",
   };
 
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id: todo._id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
   return (
     <li
-      className={`group flex justify-between items-start p-4 bg-white shadow rounded-lg ${PRIORITY_UI[todo.priority]}`}
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={`group flex justify-between items-start p-4 bg-white shadow rounded-lg ${PRIORITY_UI[todo.priority]} cursor-grab active:cursor-grabbing`}
     >
       <div className="flex-1 flex items-start gap-2">
         <button

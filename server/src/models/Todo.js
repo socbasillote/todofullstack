@@ -21,6 +21,10 @@ const todoSchema = new mongoose.Schema(
       enum: ["low", "medium", "high", "critical"],
       default: "medium",
     },
+    order: {
+      type: Number,
+      default: 0,
+    },
 
     completed: {
       type: Boolean,

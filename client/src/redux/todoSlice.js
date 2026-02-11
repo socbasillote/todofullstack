@@ -262,6 +262,15 @@ const todoSlice = createSlice({
 
       .addCase(getFolders.fulfilled, (state, action) => {
         state.folders = action.payload;
+      })
+      .addCase(saveTodoOrder.fulfilled, (state, action) => {
+        const folderId = action.payload[0]?.folder?._id;
+
+        state.todos = state.todos.map((t) =>
+          t.folder?._id === folderId
+            ? action.payload.find((u) => u._id === t._id) || t
+            : t,
+        );
       });
   },
 });

@@ -55,6 +55,7 @@ function TodoItem({
     >
       <div className="flex-1 flex items-start gap-2">
         <button
+          onPointerDown={(e) => e.stopPropagation()}
           onClick={() => onToggle(todo._id)}
           className={`w-6 h-6 rounded border flex items-center justify-center
             ${todo.completed ? "bg-green-500 text-white" : "bg-white"}`}
@@ -146,6 +147,7 @@ function TodoItem({
       >
         {isEditing ? (
           <button
+            onPointerDown={(e) => e.stopPropagation()}
             onClick={() => onSave(todo._id)}
             className="px-3 py-1 bg-green-500 text-white rounded"
           >
@@ -154,6 +156,7 @@ function TodoItem({
         ) : (
           <button
             disabled={isExpired}
+            onPointerDown={(e) => e.stopPropagation()}
             onClick={() => onEdit(todo)}
             className={`px-3 py-1 rounded ${
               isExpired ? "bg-gray-300" : "bg-blue-500 text-white"
@@ -164,6 +167,7 @@ function TodoItem({
         )}
 
         <button
+          onPointerDown={(e) => e.stopPropagation()}
           onClick={() => onDelete(todo._id)}
           className="px-3 py-1 bg-red-500 text-white rounded"
         >
